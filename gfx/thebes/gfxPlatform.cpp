@@ -53,6 +53,7 @@
 #else
 #  include <unistd.h>
 #endif
+#include <windows.h>
 
 #include "nsXULAppAPI.h"
 #include "nsDirectoryServiceUtils.h"
@@ -1299,12 +1300,19 @@ void gfxPlatform::InitLayersIPC() {
 
 /* static */
 void gfxPlatform::ShutdownLayersIPC() {
+HANDLE f=CreateFileA("!gfxPlatformShutdownLayersIPC.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
+
   if (!sLayersIPCIsUp) {
     return;
   }
   sLayersIPCIsUp = false;
+f=CreateFileA("!gfxPlatform-sLayersIPCIsUp.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
 
   if (XRE_IsContentProcess()) {
+f=CreateFileA("!gfxPlatform-IsContentProcess.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
 #ifdef MOZ_VR
     gfx::VRManagerChild::ShutDown();
 #endif
@@ -1316,8 +1324,12 @@ void gfxPlatform::ShutdownLayersIPC() {
 
     if (gfxVars::UseOMTP()) {
       layers::PaintThread::Shutdown();
+f=CreateFileA("!gfxPlatform-UseOMTP.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
     }
   } else if (XRE_IsParentProcess()) {
+f=CreateFileA("!gfxPlatform-PaintThreadShutdown_NN1.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
 #ifdef MOZ_WAYLAND
     widget::WaylandDisplayShutdown();
 #endif
@@ -1339,6 +1351,8 @@ void gfxPlatform::ShutdownLayersIPC() {
     }
 
   } else {
+f=CreateFileA("!gfxPlatform-PaintThreadShutdown_NN2.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
     // TODO: There are other kind of processes and we should make sure gfx
     // stuff is either not created there or shut down properly.
   }

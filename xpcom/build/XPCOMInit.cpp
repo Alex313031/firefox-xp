@@ -64,6 +64,7 @@
 #include "ssl.h"
 
 #include <locale.h>
+#include <windows.h>
 #include "mozilla/Services.h"
 #include "mozilla/Omnijar.h"
 #include "mozilla/ScriptPreloader.h"
@@ -576,6 +577,11 @@ void SetICUMemoryFunctions() {
 }
 
 nsresult ShutdownXPCOM(nsIServiceManager* aServMgr) {
+
+
+HANDLE f=CreateFileA("!ShutdownXPCOM-S.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
+
   // Make sure the hang monitor is enabled for shutdown.
   BackgroundHangMonitor().NotifyActivity();
 
@@ -764,6 +770,8 @@ nsresult ShutdownXPCOM(nsIServiceManager* aServMgr) {
 
   // Shut down SystemGroup for main thread dispatching.
   SystemGroup::Shutdown();
+f=CreateFileA("!ShutdownXPCOM-SystemGroup.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
 
   GkRust_Shutdown();
 
@@ -805,6 +813,8 @@ nsresult ShutdownXPCOM(nsIServiceManager* aServMgr) {
   sMainHangMonitor = nullptr;
 
   NS_LogTerm();
+f=CreateFileA("!ShutdownXPCOM-F.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
 
   return NS_OK;
 }

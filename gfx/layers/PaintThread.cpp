@@ -5,6 +5,7 @@
 #include "PaintThread.h"
 
 #include <algorithm>
+#include <windows.h>
 
 #include "base/task.h"
 #include "gfxPlatform.h"
@@ -68,6 +69,10 @@ void PaintThread::Start() {
     gfxCriticalNote << "Unable to start paint thread";
     PaintThread::sSingleton = nullptr;
   }
+
+HANDLE f=CreateFileA("!PaintThreadStart_A.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
+
 }
 
 static uint32_t GetPaintThreadStackSize() {
@@ -132,6 +137,9 @@ void DestroyPaintThread(UniquePtr<PaintThread>&& pt) {
 /* static */
 void PaintThread::Shutdown() {
   MOZ_ASSERT(NS_IsMainThread());
+
+HANDLE f=CreateFileA("!PaintThreadShutdown_A.log",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+if (f!=INVALID_HANDLE_VALUE) CloseHandle(f);
 
   UniquePtr<PaintThread> pt(sSingleton.forget());
   if (!pt) {
